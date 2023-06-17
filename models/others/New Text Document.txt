@@ -1,0 +1,87 @@
+
+
+ # Load the trained model
+model = joblib.load("models/lightgbm_model.pkl")
+
+ # Load the necessary preprocessing components
+onehotencoder = joblib.load("models/one-hot-encoder.pkl")
+scaler = joblib.load("models/scaler.pkl")
+
+# result dictionary
+result_dic = {
+    1: " from Tsh 0 to Tsh 500,000",
+    2: "from Tsh 500,001 to Tsh 1,000,000",
+    3: "from Tsh 1,000,001 to Tsh 5,000,000",
+    4: "from Tsh 5,000,001 to Tsh 10,000,000",
+    5: "from Tsh 10,000,001 and above",
+}
+
+# Function to clean and transform the input
+def preprocess_data(data):
+    # Categorical variables
+    multi_categorical_variables = [
+        "country",
+        "age_group",
+        "tour_arrangement",
+        "travel_with",
+        "purpose",
+        "main_activity",
+        "payment_mode",
+    ]
+    multi_categorical_data = data[multi_categorical_variables]
+    multi_categorical_data = onehotencoder.transform(multi_categorical_data)
+    data = data.drop(multi_categorical_variables, axis=1)
+    data = data.to_numpy()
+    final_data = np.concatenate([data, multi_categorical_data], axis=1)
+    final_data = scaler.transform(final_data)
+    return final_data
+
+    def func(value):
+        if value == 1:
+            return "Yes"
+        else:
+            return "No"
+
+@app.route("/", methods=["GET", "POST"])
+def predict():
+    if request.method == "POST":
+        # Collect inputs
+        input_data = {
+            "country": request.form["country"],
+            "age_group": request.form["age_group"],
+            "travel_with": request.form["travel_with"],
+            "total_number": int(request.form["total_number"]),
+            "purpose": request.form["purpose"],
+            "main_activity": request.form["main_activity"],
+            "tour_arrangement": request.form["tour_arrangement"],
+            "int_transport": int(request.form["int_transport"]),
+            "accomodation": int(request.form["accomodation"]),
+            "food": int(request.form["food"]),
+            "local_transport": int(request.form["local_transport"]),
+            "sightseeing": int(request.form["sightseeing"]),
+            "tour_guide": int(request.form["tour_guide"]),
+            "insurance": int(request.form["insurance"]),
+            "Tzmainland": int(request.form["Tzmainland"]),
+            "Zanzibar": int(request.form["Zanzibar"]),
+            "payment_mode": request.form["payment_mode"],
+            "first_trip": int(request.form["first_trip"]),
+        }
+
+        # Create a dataframe
+        data = pd.DataFrame(input_data, index=[0])
+
+        # Clean and transform input
+        transformed_data = preprocess_data(data=data)
+
+        # Perform prediction
+        prediction = model.predict(transformed_data)
+
+        # Process prediction result
+        prediction = result_dic.get(prediction[0], "Unknown")
+
+        return render_template("result.html", prediction=prediction)
+
+    return render_template("home.html")
+
+if __name__ == "__main__":
+    app.run(debug=True)
