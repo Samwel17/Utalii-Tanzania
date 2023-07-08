@@ -47,4 +47,10 @@ After seeding. Login details as follows:
 - View touristic sites available
 - Favourite touristic sites
 
+**Utilizing the budgeting feature by ML**
+-Clone "Samwel17\Utalii-FlaskAPI" repository
+-Install the flask app requirements
+- Run the flask application
+- Run the Laravel application ( on different CMD simultaneously)
+
 
