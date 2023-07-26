@@ -1,5 +1,7 @@
 ## **Laravel tourism management system** 
 
+**This is an application built with Laravel framework and a Flask application as an API** 
+
 **Utalii** is built on Laravel 8
 
 There are 3 types of user accounts. They include:
